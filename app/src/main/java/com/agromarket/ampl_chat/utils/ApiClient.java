@@ -33,6 +33,7 @@ public class ApiClient {
      * Before releasing to production, replace this with a proper SSL certificate
      * on your server and remove this method.
      */
+    
     private static OkHttpClient getUnsafeOkHttpClient() {
         try {
             // Trust all certificates

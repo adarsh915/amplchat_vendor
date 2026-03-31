@@ -7,7 +7,7 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
+import org.json.JSONObject;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -92,10 +92,22 @@ public class LoginActivity extends AppCompatActivity {
                 btnLogin.setText("Send OTP");
                 if (response.isSuccessful() && response.body() != null && response.body().status) {
                     showOtpDialog(phone);
+                    // ad start
                 } else {
-                    String msg = (response.body() != null) ? response.body().message : "User not found";
-                    toast(msg);
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBodyStr = response.errorBody().string();
+                            JSONObject errorJson = new JSONObject(errorBodyStr);
+                            String msg = errorJson.getString("message");
+                            toast(msg);
+                        } else {
+                            toast("Something went wrong. Please try again.");
+                        }
+                    } catch (Exception e) {
+                        toast("Something went wrong. Please try again.");
+                    }
                 }
+                // ad close
             }
 
             @Override

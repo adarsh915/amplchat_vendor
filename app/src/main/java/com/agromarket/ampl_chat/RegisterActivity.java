@@ -10,6 +10,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.json.JSONObject;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
@@ -134,8 +135,8 @@ public class RegisterActivity extends AppCompatActivity {
     private void initViews() {
         etName = findViewById(R.id.etName);
         etEmail = findViewById(R.id.etEmail);
-        etPassword = findViewById(R.id.etPassword);
-        etConfirmPassword = findViewById(R.id.etConfirmPassword);
+        // etPassword = findViewById(R.id.etPassword);
+        // etConfirmPassword = findViewById(R.id.etConfirmPassword);
 
         etFirmName = findViewById(R.id.etFirmName);
         etGstNumber = findViewById(R.id.etGstNumber);
@@ -232,18 +233,18 @@ public class RegisterActivity extends AppCompatActivity {
         if (isInvalid(etEmail, EMAIL_REGEX, "Invalid email"))
             return false;
 
-        if (isEmpty(etPassword, "Password required"))
-            return false;
-        if (etPassword.getText().toString().length() < 6) {
-            etPassword.setError("Minimum 6 characters");
-            return false;
-        }
+        // if (isEmpty(etPassword, "Password required"))
+        // return false;
+        // if (etPassword.getText().toString().length() < 6) {
+        // etPassword.setError("Minimum 6 characters");
+        // return false;
+        // }
 
-        if (!etPassword.getText().toString()
-                .equals(etConfirmPassword.getText().toString())) {
-            etConfirmPassword.setError("Passwords do not match");
-            return false;
-        }
+        // if (!etPassword.getText().toString()
+        // .equals(etConfirmPassword.getText().toString())) {
+        // etConfirmPassword.setError("Passwords do not match");
+        // return false;
+        // }
 
         if (isEmpty(etFirmName, "Firm name required"))
             return false;
@@ -336,42 +337,54 @@ public class RegisterActivity extends AppCompatActivity {
         api.sendOtp(
                 toRequestBody(etName.getText().toString()),
                 toRequestBody(etEmail.getText().toString()),
-                toRequestBody(etPassword.getText().toString()),
-                toRequestBody(etConfirmPassword.getText().toString()),
-                toRequestBody(etFirmName.getText().toString()),
-                toRequestBody(etGstNumber.getText().toString()),
-                toRequestBody(spLicenseType.getSelectedItem().toString()),
-                toRequestBody(etFertilizerLicense.getText().toString()),
-                toRequestBody(etSeedsLicense.getText().toString()),
-                toRequestBody(etPesticideLicense.getText().toString()),
-                toRequestBody(etAddress.getText().toString()),
-                toRequestBody(fullPhone), // 🔥 Use fullPhone
-                toRequestBody(altPhone), // 🔥 Use altPhone
-                fileToPart("gst_doc", gstUri),
-                fileToPart("license_doc", licenseUri),
-                fileToPart("aadhar_front_path", aadharFrontUri),
-                fileToPart("aadhar_back_path", aadharBackUri)).enqueue(new Callback<VendorRegisterResponse>() {
-                    @Override
-                    public void onResponse(Call<VendorRegisterResponse> call,
-                            Response<VendorRegisterResponse> response) {
-                        btnRegister.setEnabled(true);
-                        btnRegister.setText("Register");
+                // toRequestBody(etPassword.getText().toString()),
+                // toRequestBody(etConfirmPassword.getText().toString()),
+                // toRequestBody(etFirmName.getText().toString()),
+                // toRequestBody(etGstNumber.getText().toString()),
+                // toRequestBody(spLicenseType.getSelectedItem().toString()),
+                // toRequestBody(etFertilizerLicense.getText().toString()),
+                // toRequestBody(etSeedsLicense.getText().toString()),
+                // toRequestBody(etPesticideLicense.getText().toString()),
+                // toRequestBody(etAddress.getText().toString()),
+                toRequestBody(fullPhone) // 🔥 Use fullPhone
+        // toRequestBody(altPhone), // 🔥 Use altPhone
+        // fileToPart("gst_doc", gstUri),
+        // fileToPart("license_doc", licenseUri),
+        // fileToPart("aadhar_front_path", aadharFrontUri),
+        // fileToPart("aadhar_back_path", aadharBackUri))
+        ).enqueue(new Callback<VendorRegisterResponse>() {
+            @Override
+            public void onResponse(Call<VendorRegisterResponse> call,
+                    Response<VendorRegisterResponse> response) {
+                btnRegister.setEnabled(true);
+                btnRegister.setText("Register");
 
-                        if (response.isSuccessful() && response.body() != null && response.body().isStatus()) {
-                            showOtpDialog();
-                        } else {
-                            String msg = response.body() != null ? response.body().getMessage() : "Error sending OTP";
+                if (response.isSuccessful() && response.body() != null && response.body().isStatus()) {
+                    showOtpDialog();
+                } else {
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorBodyStr = response.errorBody().string();
+                            JSONObject errorJson = new JSONObject(errorBodyStr);
+                            String msg = errorJson.getString("message");
                             Toast.makeText(RegisterActivity.this, msg, Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(RegisterActivity.this, "Error sending OTP", Toast.LENGTH_LONG).show();
                         }
+                    } catch (Exception e) {
+                        Toast.makeText(RegisterActivity.this, "Something went wrong. Please try again.",
+                                Toast.LENGTH_LONG).show();
                     }
+                }
+            }
 
-                    @Override
-                    public void onFailure(Call<VendorRegisterResponse> call, Throwable t) {
-                        btnRegister.setEnabled(true);
-                        btnRegister.setText("Register");
-                        Toast.makeText(RegisterActivity.this, "Network error", Toast.LENGTH_SHORT).show();
-                    }
-                });
+            @Override
+            public void onFailure(Call<VendorRegisterResponse> call, Throwable t) {
+                btnRegister.setEnabled(true);
+                btnRegister.setText("Register");
+                Toast.makeText(RegisterActivity.this, "Network error", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // oth dialogue box
@@ -413,8 +426,8 @@ public class RegisterActivity extends AppCompatActivity {
                 toRequestBody(otp), // 🔥 Pass the OTP here
                 toRequestBody(etName.getText().toString()),
                 toRequestBody(etEmail.getText().toString()),
-                toRequestBody(etPassword.getText().toString()),
-                toRequestBody(etConfirmPassword.getText().toString()),
+                // toRequestBody(etPassword.getText().toString()),
+                // toRequestBody(etConfirmPassword.getText().toString()),
                 toRequestBody(etFirmName.getText().toString()),
                 toRequestBody(etGstNumber.getText().toString()),
                 toRequestBody(spLicenseType.getSelectedItem().toString()),
